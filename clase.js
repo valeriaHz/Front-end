@@ -48,7 +48,7 @@ for(let i = 0 ; i < datos.length; i++){
 } */
 
 //de donde se van a sacar los datos y donde se van a almacenar posteriormente
-//siempre va a recibir una funcion annima (funcion flecha)
+//siempre va a recibir una funcion anonima (funcion flecha)
 //no se puede romper el ciclo de un map
 
 /* datos.map((persona) => {
