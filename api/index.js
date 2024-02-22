@@ -1,8 +1,89 @@
-const listaPokemon = document.querySelector('#listaPokemon');
-const botonesHeader = document.querySelector('.btn-header');
-let URL = " https://pokeapi.co/api/v2/pokemon/";
+const baseUrl = "https://pokeapi.co/api/v2/pokemon/";
+        let currentPage = 1;
+        // Cantidad de Pokémon por página
+        const limit = 10; 
+        // Máximo de botones de página visibles
+        const maxPagesVisible = 5;
 
-for (let i = 1; i <= 151; i++) {
+        async function fetchPokemons(page) {
+            const offset = (page - 1) * limit;
+            const url = `${baseUrl}?limit=${limit}&offset=${offset}`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            displayPokemons(data.results);
+            setupPagination(data.count, page);
+        }
+
+        async function displayPokemons(pokemons) {
+            const pokemonContainer = document.getElementById('pokemonContainer');
+            // Limpiar contenido anterior
+            pokemonContainer.innerHTML = ''; 
+
+            for (const pokemon of pokemons) {
+                const response = await fetch(pokemon.url);
+                const pokemonDetails = await response.json();
+
+                const cardHtml = `
+                    <div class="card">
+                        <img src="${pokemonDetails.sprites.other["official-artwork"].front_default}" alt="${pokemonDetails.name}">
+                        <h3>${pokemonDetails.name}</h3>
+                        <p>ID: ${pokemonDetails.id}</p>
+                        <p>Altura: ${pokemonDetails.height}</p>
+                        <p>Peso: ${pokemonDetails.weight}</p>
+                        <p>Tipo: ${pokemonDetails.types.map(type => type.type.name).join(', ')}</p>
+                    </div>
+                `;
+                pokemonContainer.innerHTML += cardHtml;
+            }
+        }
+
+        function setupPagination(totalItems, currentPage) {
+            const totalPages = Math.ceil(totalItems / limit);
+            const paginationContainer = document.getElementById('pagination');
+            // Limpiar paginación anterior
+            paginationContainer.innerHTML = ''; 
+
+            // Agregar botón para retroceder
+            const prevPage = currentPage - 1 > 0 ? currentPage - 1 : 1;
+            const prevButton = document.createElement('button');
+            prevButton.innerText = '<';
+            prevButton.addEventListener('click', () => fetchPokemons(prevPage));
+            paginationContainer.appendChild(prevButton);
+
+            // Calcular rango de páginas visibles
+            let startPage = currentPage - Math.floor(maxPagesVisible / 2);
+            startPage = startPage < 1 ? 1 : startPage;
+            let endPage = startPage + maxPagesVisible - 1;
+            endPage = endPage > totalPages ? totalPages : endPage;
+
+            // Ajustar inicio si estamos al final
+            startPage = endPage - startPage < maxPagesVisible ? endPage - maxPagesVisible + 1 : startPage;
+            startPage = startPage < 1 ? 1 : startPage;
+
+            for (let i = startPage; i <= endPage; i++) {
+                const button = document.createElement('button');
+                button.innerText = i;
+                button.addEventListener('click', () => {
+                    fetchPokemons(i);
+                });
+                if (currentPage === i) button.disabled = true;
+                paginationContainer.appendChild(button);
+            }
+
+            // Agregar botón para avanzar
+            const nextPage = currentPage + 1 <= totalPages ? currentPage + 1 : totalPages;
+            const nextButton = document.createElement('button');
+            nextButton.innerText = '>';
+            nextButton.addEventListener('click', () => fetchPokemons(nextPage));
+            paginationContainer.appendChild(nextButton);
+        }
+
+        fetchPokemons(currentPage);
+
+
+
+/* for (let i = 1; i <= 151; i++) {
     fetch(URL + i)
         .then((response) => response.json())
         .then(data => mostrarPokemon(data));
@@ -34,27 +115,4 @@ function mostrarPokemon(poke) {
     </div>
     `;
     listaPokemon.append(div);
-}
-
-/* botonesHeader.forEach(boton => boton.addEventListener("click", (event)=>{ */
-    /* trae el id del boton */
-/*     const botonId = event.currenttarget.id;
-
-    listaPokemon.innerHTML = "";
-
-    for (let i = 1; i <= 151; i++) {
-        fetch(URL + i)
-            .then((response) => response.json())
-            .then(data =>{
-
-                if(botonId === "ver-todos"){
-                    mostrarPokemon(data);
-                }else{
-                    const tipos = data.types.map(type => type.type.name);
-                    if(tipos.some(tipo=>tipo.includes(botonId))){
-                        mostrarPokemon(data)
-                }
-                }
-            });
-    }
-})); */
+} */
